@@ -25,7 +25,7 @@ class MagnetDaemon:
         # self.session.stop_upnp()
         # self.session.stop_natpmp()
 
-        self.session.set_download_rate_limit(10000)
+        # self.session.set_download_rate_limit(10000)
         self.session.set_max_connections(1000)
 
         self.mongconn = pymongo.Connection()
@@ -153,7 +153,7 @@ class MagnetDaemon:
         peers = torrent.get_peer_info()
 
         for p in peers:
-            # print ' - %s %s' % (p.ip[0], p.client)
+            #print ' - %s %s' % (p.ip[0], p.client)
 
             addr = p.ip[0]
             peer = self.peers.find_one({'addr': addr})
@@ -163,7 +163,7 @@ class MagnetDaemon:
                     'torrents': []
                     }
 
-            peer['client'] = unicode(p.client, 'utf-8')
+            peer['client'] = unicode(p.client, 'utf-8', 'ignore')
             ih = str(torrent.info_hash())
             if ih not in peer['torrents']:
                 peer['torrents'].append(ih)
@@ -204,9 +204,13 @@ class Main:
 
         if config.dump_peers:
             for a in md.peers.find():
-                print a
-                print u'%s,%s' % (a['addr'], a['client'].decode('utf-8')),
-                print u','.join(a['torrents'])
+                client = a['client'].encode('utf-8')
+                sys.stdout.write(a['addr'])
+                sys.stdout.write(',')
+                sys.stdout.write(client)
+                sys.stdout.write(',')
+                sys.stdout.write(','.join(a['torrents']))
+                sys.stdout.write('\n')
             quit = True
 
         if quit and not config.dont_quit:
